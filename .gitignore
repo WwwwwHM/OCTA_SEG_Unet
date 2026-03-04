@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# IDE / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Model checkpoints / weights
+*.pth
+*.pt
+*.ckpt
+
+# Dataset and generated outputs
+dataset/images/
+dataset/masks/
+dataset/train/
+dataset/test/
+predictset/
+predict_result/
+Unet_predict_result/
+model_result/
+test_result/
+eval_result/
+loss_result/
+
+# Logs / artifacts
+*.log
+*.tmp
