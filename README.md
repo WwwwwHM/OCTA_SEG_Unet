@@ -10,6 +10,42 @@
 - 注意力模块对比实验：`run_attention_benchmark.py`
 - 多随机种子稳定性实验：`run_multiseed.py`
 
+## 1.1 项目中的注意力机制
+本项目在解码阶段的 skip connection 融合前，支持按需叠加以下注意力模块（实现见 `unet.py`）：
+
+1) **Gated Attention（门控注意力）**
+- 模块：`AttentionBlock`
+- 思路：使用解码端特征 `g` 作为门控信号，与编码端跳连特征 `x` 做线性映射后相加，再经 `Sigmoid` 生成空间权重图。
+- 作用：抑制无关背景区域，突出与当前解码语义一致的跳连信息。
+
+2) **ECA Attention（高效通道注意力）**
+- 模块：`ECAAttention`
+- 思路：先做全局平均池化得到通道描述，再通过轻量 `1D Conv` 建模局部跨通道依赖，最后得到通道权重。
+- 作用：在几乎不增加参数的情况下增强关键通道响应。
+
+3) **Spatial Attention（空间注意力）**
+- 模块：`SpatialAttention`
+- 思路：对输入特征在通道维做 `avg/max` 聚合，拼接后经卷积与 `Sigmoid` 得到空间权重图。
+- 作用：强调血管等细粒度空间结构区域。
+
+4) **PDE Attention（梯度先验注意力）**
+- 模块：`PDEAttention`
+- 思路：分别用 `(1,3)` 和 `(3,1)` 卷积提取近似横向/纵向梯度信息，融合后生成注意力权重。
+- 作用：强化边缘与方向性结构，对细小血管连续性更友好。
+
+### 启用方式
+训练脚本通过 `--attention` 选择单一主注意力配置：
+
+```bash
+python main.py --attention none
+python main.py --attention gated
+python main.py --attention eca
+python main.py --attention spatial
+python main.py --attention pde
+```
+
+当前 `main.py` 默认配置为 `--attention eca`。
+
 ## 2. 目录结构（核心）
 ```text
 OCTA_seg_Unet+/
